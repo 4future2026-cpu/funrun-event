@@ -652,17 +652,33 @@ export default function AdminPage() {
                                     </a>
                                   )}
 
-                                  {/* Jika status ditolak atau pending, beri opsi verifikasi manual jika panitia mau */}
+                                  {/* Jika status ditolak atau pending, beri opsi verifikasi manual atau tolak */}
                                   {(item.status === "pending" || item.status === "rejected") && (
-                                    <button
-                                      type="button"
-                                      disabled={isProcessing}
-                                      onClick={() => handleVerify(item.id, "approve")}
-                                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-[11px] font-semibold transition min-h-[36px]"
-                                      title="Tandai lunas manual"
-                                    >
-                                      Tandai Lunas
-                                    </button>
+                                    <>
+                                      <button
+                                        type="button"
+                                        disabled={isProcessing}
+                                        onClick={() => handleVerify(item.id, "approve")}
+                                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition min-h-[36px]"
+                                        title="Tandai lunas manual"
+                                      >
+                                        Tandai Lunas
+                                      </button>
+                                      {item.status !== "rejected" && (
+                                        <button
+                                          type="button"
+                                          disabled={isProcessing}
+                                          onClick={() => {
+                                            setRejectingItem(item);
+                                            setRejectionReasonInput("Pendaftaran dibatalkan atau bukti transfer tidak diterima.");
+                                          }}
+                                          className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-[11px] font-semibold transition min-h-[36px]"
+                                          title="Tolak pendaftaran ini"
+                                        >
+                                          Tolak
+                                        </button>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                               </td>

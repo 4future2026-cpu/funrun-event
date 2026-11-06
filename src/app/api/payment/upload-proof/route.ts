@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { submitPaymentProof, getPayment } from "@/lib/db";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import fs from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
@@ -51,12 +52,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Pastikan folder .data/proofs ada
-    const proofsDir = path.join(process.cwd(), ".data", "proofs");
-    if (!fs.existsSync(proofsDir)) {
-      fs.mkdirSync(proofsDir, { recursive: true });
-    }
-
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
@@ -71,11 +66,38 @@ export async function POST(req: NextRequest) {
       : ".jpg";
 
     const fileName = `proof_${paymentId.slice(0, 8)}_${Date.now()}_${randomUUID().slice(0, 4)}${safeExt}`;
-    const filePath = path.join(proofsDir, fileName);
 
-    fs.writeFileSync(filePath, buffer);
+    let proofUrl = "";
 
-    const proofUrl = `/api/proof/${fileName}`;
+    // Simpan ke Supabase Storage jika aktif (Cloud/Vercel)
+    if (isSupabaseConfigured) {
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("payment-proofs")
+        .upload(fileName, buffer, {
+          contentType: file.type || "image/jpeg",
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error("Supabase storage upload error:", uploadError);
+        throw new Error(`Gagal menyimpan ke cloud storage: ${uploadError.message}`);
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("payment-proofs")
+        .getPublicUrl(uploadData.path);
+
+      proofUrl = publicUrlData.publicUrl;
+    } else {
+      // Fallback lokal jika run offline tanpa Supabase
+      const proofsDir = path.join(process.cwd(), ".data", "proofs");
+      if (!fs.existsSync(proofsDir)) {
+        fs.mkdirSync(proofsDir, { recursive: true });
+      }
+      const filePath = path.join(proofsDir, fileName);
+      fs.writeFileSync(filePath, buffer);
+      proofUrl = `/api/proof/${fileName}`;
+    }
 
     await submitPaymentProof(paymentId, {
       proofImage: proofUrl,
