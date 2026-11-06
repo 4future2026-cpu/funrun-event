@@ -748,13 +748,29 @@ export default function AdminPage() {
 
               {/* Tampilan Gambar Bukti */}
               {selectedProofParticipant.proof_image && (
-                <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-slate-300 bg-slate-100">
-                  <Image
+                <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-slate-300 bg-slate-100 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={selectedProofParticipant.proof_image}
                     alt={`Bukti transfer ${selectedProofParticipant.registration.full_name}`}
-                    fill
-                    className="object-contain"
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                      const fallback = e.currentTarget.parentElement?.querySelector(".img-fallback");
+                      if (fallback) fallback.classList.remove("hidden");
+                    }}
                   />
+                  <div className="img-fallback hidden p-4 text-center text-slate-500">
+                    <p className="font-semibold">Gagal memuat preview gambar.</p>
+                    <a
+                      href={selectedProofParticipant.proof_image}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-block px-3 py-1 bg-sky-600 text-white rounded font-bold text-xs"
+                    >
+                      Buka Gambar di Tab Baru
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
