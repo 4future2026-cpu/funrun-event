@@ -15,9 +15,10 @@ export interface EmailPayload {
 export function generateReceiptEmailHtml(payload: EmailPayload): string {
   const formattedAmount = `Rp ${payload.amount.toLocaleString("id-ID")}`;
   const formattedDate = new Date(payload.paidAt).toLocaleString("id-ID", {
+    timeZone: "Asia/Jakarta",
     dateStyle: "full",
     timeStyle: "short",
-  });
+  }) + " WIB";
 
   return `<!DOCTYPE html>
 <html lang="id">
@@ -77,7 +78,7 @@ export function generateReceiptEmailHtml(payload: EmailPayload): string {
 
       <div style="font-size: 12px; color: #94a3b8; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 16px;">
         <p style="margin: 0 0 4px;"><strong>Info Pengambilan Race Pack:</strong></p>
-        <p style="margin: 0 0 12px;">Pengambilan BIB & Race Pack pada H-1 di Venue Utama pukul 09.00 - 18.00 WIB. Tunjukkan email bukti ini beserta kartu identitas.</p>
+        <p style="margin: 0 0 12px;">Pengambilan Race Pack pada hari-H di Venue pukul 05.30 WIB. Tunjukkan email bukti ini/bukti pendaftaran di website.</p>
         <p style="margin: 0;">Butuh bantuan? Hubungi WhatsApp panitia di +62 831-8206-1336.</p>
       </div>
     </div>

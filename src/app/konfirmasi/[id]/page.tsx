@@ -205,7 +205,13 @@ export default function KonfirmasiPage({
                 <div className="flex justify-between">
                   <span className="text-slate-600">Waktu Pembayaran</span>
                   <span className="text-slate-900 text-xs font-medium">
-                    {data.payment.paid_at ? new Date(data.payment.paid_at).toLocaleString("id-ID") : "-"}
+                    {data.payment.paid_at
+                      ? new Date(data.payment.paid_at).toLocaleString("id-ID", {
+                          timeZone: "Asia/Jakarta",
+                          dateStyle: "full",
+                          timeStyle: "short",
+                        }) + " WIB"
+                      : "-"}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline pt-2 border-t border-slate-200/60">
@@ -217,8 +223,8 @@ export default function KonfirmasiPage({
               </div>
 
               <div className="bg-white/60 border border-slate-200/70 rounded-xl p-3.5 text-xs text-slate-600 mt-4 leading-relaxed">
-                <strong>Catatan Pengambilan Race Pack:</strong><br />
-                Tunjukkan bukti pendaftaran ini (cetak atau dari layar ponsel) saat pengambilan benefit di Hutan Kota Unfinished.
+                <strong>Info Pengambilan Race Pack:</strong><br />
+                Pengambilan Race Pack pada hari-H di Venue pukul 05.30 WIB. Tunjukkan email bukti ini/bukti pendaftaran di website.
               </div>
             </div>
           </div>
