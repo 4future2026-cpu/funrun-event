@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     const defaultWaGroup =
-      process.env.WA_GROUP_INVITE_URL || "https://chat.whatsapp.com/SrcHkFunRun2026Official";
+      process.env.WA_GROUP_INVITE_URL || "https://chat.whatsapp.com/D6XbT9VoNkz0SPQ6A2OfgF?s=cl&p=i&mlu=4&ilr=4&iam=2";
 
     const result = await verifyPaymentByAdmin(payment_id, action, {
       reason,
