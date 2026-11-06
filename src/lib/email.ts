@@ -1,3 +1,5 @@
+import nodemailer from "nodemailer";
+
 export interface EmailPayload {
   to: string;
   fullName: string;
@@ -84,35 +86,40 @@ export function generateReceiptEmailHtml(payload: EmailPayload): string {
 </html>`;
 }
 
+function getMailTransporter() {
+  const smtpUser = process.env.BREVO_SMTP_USER;
+  const smtpPass = process.env.BREVO_SMTP_KEY;
+
+  if (!smtpUser || !smtpPass) {
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
+    },
+  });
+}
+
 export async function sendConfirmationEmail(payload: EmailPayload) {
-  const apiKey = process.env.RESEND_API_KEY;
-
-  if (apiKey) {
-    try {
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: process.env.EMAIL_FROM || "SRC X HK X SAKRARUN <noreply@srchkfunrun.com>",
-          to: payload.to,
-          subject: "Bukti Pembayaran & Pendaftaran SRC X HK X SAKRARUN",
-          html: generateReceiptEmailHtml(payload),
-        }),
+  try {
+    const transporter = getMailTransporter();
+    if (transporter) {
+      const info = await transporter.sendMail({
+        from: '"SRC X HK X SAKRARUN" <4future2026@gmail.com>',
+        to: payload.to,
+        subject: "Bukti Pembayaran & Tiket SRC X HK X SAKRARUN 2026",
+        html: generateReceiptEmailHtml(payload),
       });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error("Resend API error:", errorData);
-      } else {
-        console.log(`[Email] Sukses terkirim via Resend ke ${payload.to}`);
-      }
+      console.log(`[Email] Sukses terkirim via Brevo ke ${payload.to} (${info.messageId})`);
       return;
-    } catch (err) {
-      console.error("Failed to send email via Resend:", err);
     }
+  } catch (err) {
+    console.error("Gagal mengirim email konfirmasi via Brevo:", err);
   }
 
   console.log("--------------------------------------------------");
@@ -158,35 +165,37 @@ export function generatePaymentInstructionsEmailHtml(payload: PaymentInstruction
         Halo <strong>${payload.fullName}</strong>,
       </p>
       <p style="font-size: 14px; line-height: 1.6; color: #cbd5e1; margin: 0 0 20px;">
-        Pendaftaran Anda telah tercatat di sistem kami. Silakan selesaikan pembayaran dan unggah bukti transfer sebelum batas waktu berakhir untuk mengamankan slot Anda.
+        Terima kasih telah mendaftar di ajang <strong>SRC X HK X SAKRARUN 2026</strong>. Silakan selesaikan pembayaran sebelum batas waktu berikut:
       </p>
 
       <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
         <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #f1f5f9;">
           <tr>
-            <td style="padding: 6px 0; color: #94a3b8;">Kode Transaksi</td>
+            <td style="padding: 6px 0; color: #94a3b8;">Kode Pembayaran</td>
             <td style="padding: 6px 0; font-family: monospace; font-weight: 600; text-align: right;">${payload.paymentCode}</td>
           </tr>
           ${payload.schoolOrigin ? `<tr>
             <td style="padding: 6px 0; color: #94a3b8;">Asal Sekolah</td>
             <td style="padding: 6px 0; font-weight: 600; text-align: right;">${payload.schoolOrigin}</td>
           </tr>` : ""}
+          ${payload.uniqueCode ? `<tr>
+            <td style="padding: 6px 0; color: #94a3b8;">Kode Unik</td>
+            <td style="padding: 6px 0; font-family: monospace; font-weight: 600; text-align: right; color: #38bdf8;">+${payload.uniqueCode}</td>
+          </tr>` : ""}
           <tr>
-            <td style="padding: 6px 0; color: #94a3b8;">Batas Waktu (24 Jam)</td>
-            <td style="padding: 6px 0; font-weight: 600; text-align: right; color: #fbbf24;">${formattedExpiry}</td>
+            <td style="padding: 6px 0; color: #94a3b8;">Batas Waktu</td>
+            <td style="padding: 6px 0; text-align: right; color: #f59e0b;">${formattedExpiry}</td>
           </tr>
           <tr style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
-            <td style="padding: 10px 0 0; font-weight: 700; color: #ffffff;">Total Transfer Tepat</td>
-            <td style="padding: 10px 0 0; font-weight: 700; color: #ffffff; text-align: right; font-size: 16px;">${formattedAmount}</td>
+            <td style="padding: 10px 0 0; font-weight: 700; color: #ffffff;">Total Transfer</td>
+            <td style="padding: 10px 0 0; font-weight: 700; color: #38bdf8; text-align: right; font-size: 16px;">${formattedAmount}</td>
           </tr>
         </table>
-        ${payload.uniqueCode ? `<p style="margin: 8px 0 0; font-size: 11px; color: #38bdf8; text-align: right;">(Termasuk kode unik verifikasi: Rp ${payload.uniqueCode})</p>` : ""}
       </div>
 
-      <div style="border-left: 3px solid #38bdf8; padding-left: 14px; margin-bottom: 24px;">
-        <h3 style="margin: 0 0 6px; font-size: 14px; font-weight: 600; color: #ffffff;">Lanjutkan Pembayaran Kapan Saja</h3>
-        <p style="margin: 0 0 12px; font-size: 12px; color: #94a3b8; line-height: 1.5;">
-          Jika Anda menutup browser atau ingin membayar dari perangkat lain, Anda tidak perlu mengisi formulir pendaftaran ulang. Klik tombol di bawah ini:
+      <div style="text-align: center; margin: 28px 0;">
+        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 12px;">
+          Klik tombol di bawah untuk melihat kode QRIS dan mengunggah bukti transfer Anda:
         </p>
         <a href="${payload.paymentUrl}" style="display: inline-block; background-color: #ffffff; color: #0f172a; text-decoration: none; font-size: 13px; font-weight: 700; padding: 12px 22px; border-radius: 8px;">
           Buka Halaman Pembayaran & Unggah Bukti &rarr;
@@ -205,34 +214,20 @@ export function generatePaymentInstructionsEmailHtml(payload: PaymentInstruction
 }
 
 export async function sendPaymentInstructionsEmail(payload: PaymentInstructionsPayload) {
-  const apiKey = process.env.RESEND_API_KEY;
-
-  if (apiKey) {
-    try {
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: process.env.EMAIL_FROM || "SRC X HK X SAKRARUN <noreply@srchkfunrun.com>",
-          to: payload.to,
-          subject: "Instruksi Pembayaran SRC X HK X SAKRARUN",
-          html: generatePaymentInstructionsEmailHtml(payload),
-        }),
+  try {
+    const transporter = getMailTransporter();
+    if (transporter) {
+      const info = await transporter.sendMail({
+        from: '"SRC X HK X SAKRARUN" <4future2026@gmail.com>',
+        to: payload.to,
+        subject: "Instruksi Pembayaran SRC X HK X SAKRARUN 2026",
+        html: generatePaymentInstructionsEmailHtml(payload),
       });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error("Resend API error:", errorData);
-      } else {
-        console.log(`[Email] Sukses terkirim instruksi pembayaran ke ${payload.to}`);
-      }
+      console.log(`[Email] Sukses terkirim instruksi pembayaran via Brevo ke ${payload.to} (${info.messageId})`);
       return;
-    } catch (err) {
-      console.error("Failed to send payment instructions email via Resend:", err);
     }
+  } catch (err) {
+    console.error("Gagal mengirim email instruksi via Brevo:", err);
   }
 
   console.log("--------------------------------------------------");
