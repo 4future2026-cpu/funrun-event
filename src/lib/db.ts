@@ -755,6 +755,55 @@ export async function markWaLinkUsed(token: string) {
   }
 }
 
+export async function deleteRegistrationAndPayment(paymentId: string): Promise<boolean> {
+  if (isSupabaseConfigured) {
+    const { data: payment } = await supabase
+      .from("payments")
+      .select("registration_id, proof_image")
+      .eq("id", paymentId)
+      .single();
+
+    if (!payment) return false;
+
+    // Hapus wa_invite_links jika ada
+    await supabase.from("wa_invite_links").delete().eq("registration_id", payment.registration_id);
+
+    // Hapus file gambar di storage jika tersimpan di Supabase
+    if (payment.proof_image && payment.proof_image.includes("/payment-proofs/")) {
+      const fileName = payment.proof_image.split("/payment-proofs/")[1];
+      if (fileName) {
+        await supabase.storage.from("payment-proofs").remove([fileName]);
+      }
+    }
+
+    // Hapus payment
+    await supabase.from("payments").delete().eq("id", paymentId);
+
+    // Hapus registration
+    await supabase.from("registrations").delete().eq("id", payment.registration_id);
+
+    return true;
+  }
+
+  // Fallback lokal
+  const store = getStore();
+  const payment = store.payments[paymentId];
+  if (!payment) return false;
+
+  const regId = payment.registration_id;
+  delete store.payments[paymentId];
+  delete store.registrations[regId];
+
+  for (const [token, link] of Object.entries(store.waLinks)) {
+    if (link.registration_id === regId) {
+      delete store.waLinks[token];
+    }
+  }
+
+  persistStore(store);
+  return true;
+}
+
 export async function getAllRegistrationsWithPayments(): Promise<
   Array<Payment & { registration: Registration; wa_token: string | null }>
 > {

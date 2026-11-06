@@ -46,6 +46,8 @@ export default function AdminPage() {
   const [rejectingItem, setRejectingItem] = useState<ParticipantItem | null>(null);
   const [rejectionReasonInput, setRejectionReasonInput] = useState("");
   const [actionSuccessMessage, setActionSuccessMessage] = useState("");
+  const [deletingItem, setDeletingItem] = useState<ParticipantItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     try {
@@ -180,6 +182,36 @@ export default function AdminPage() {
       alert(err instanceof Error ? err.message : "Terjadi kesalahan.");
     } finally {
       setVerifyingId(null);
+    }
+  }
+
+  async function handleDelete(paymentId: string) {
+    setIsDeleting(true);
+    setActionSuccessMessage("");
+    const validToken = authToken || "authenticated_sakrarun_2026";
+    try {
+      const res = await fetch("/api/admin/delete-participant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${validToken}`,
+        },
+        body: JSON.stringify({ payment_id: paymentId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Gagal menghapus data.");
+      }
+
+      setActionSuccessMessage("Data pendaftar berhasil dihapus permanen dari sistem.");
+      setTimeout(() => setActionSuccessMessage(""), 5000);
+      setDeletingItem(null);
+      await fetchParticipants(validToken);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Terjadi kesalahan saat menghapus data.");
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -680,6 +712,17 @@ export default function AdminPage() {
                                       )}
                                     </>
                                   )}
+                                  {/* Tombol Hapus Data Permanen */}
+                                  <button
+                                    type="button"
+                                    onClick={() => setDeletingItem(item)}
+                                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 transition"
+                                    title="Hapus permanen data peserta ini"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
                                 </div>
                               </td>
                             </tr>
@@ -852,6 +895,53 @@ export default function AdminPage() {
                   {verifyingId === rejectingItem.id ? "Memproses..." : "Konfirmasi Tolak"}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL KONFIRMASI HAPUS PESERTA */}
+      {deletingItem && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          onClick={() => !isDeleting && setDeletingItem(null)}
+        >
+          <div
+            className="relative max-w-sm w-full bg-white rounded-3xl p-6 shadow-2xl text-slate-900 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+
+            <h3 className="text-base font-black text-slate-900 mb-1">
+              Hapus Data Peserta?
+            </h3>
+            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+              Yakin ingin menghapus data <strong>{deletingItem.registration?.full_name}</strong> secara permanen dari database? Tindakan ini tidak dapat dibatalkan.
+            </p>
+
+            <div className="flex items-center justify-center gap-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setDeletingItem(null)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition min-h-[44px] disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => handleDelete(deletingItem.id)}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition min-h-[44px] disabled:opacity-50 shadow-md"
+              >
+                {isDeleting ? "Menghapus..." : "Ya, Hapus"}
+              </button>
             </div>
           </div>
         </div>
