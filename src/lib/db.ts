@@ -83,6 +83,11 @@ export function saveParticipantIndividualFile(data: {
   payment: Payment;
   waToken?: string | null;
 }): string | null {
+  // Di cloud (Vercel serverless), filesystem lokal read-only, arsip disimpan di Supabase
+  if (isSupabaseConfigured) {
+    return null;
+  }
+
   try {
     if (!fs.existsSync(participantsDir)) {
       fs.mkdirSync(participantsDir, { recursive: true });
