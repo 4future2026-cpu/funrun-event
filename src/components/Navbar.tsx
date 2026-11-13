@@ -86,12 +86,9 @@ export default function Navbar() {
               Lanjut Bayar (Rp {activePayment.amount.toLocaleString("id-ID")}) &rarr;
             </Link>
           ) : (
-            <Link
-              href="/daftar"
-              className="glass-btn-blue text-xs sm:text-sm font-bold px-5 py-2.5 inline-flex items-center justify-center min-h-[44px]"
-            >
-              Daftar Sekarang
-            </Link>
+            <span className="text-xs font-bold text-red-700 bg-red-100/90 border border-red-200/80 px-3.5 py-1.5 rounded-full">
+              Pendaftaran Ditutup
+            </span>
           )}
         </div>
 
@@ -132,13 +129,9 @@ export default function Navbar() {
           >
             Beranda
           </Link>
-          <Link
-            href="/daftar"
-            onClick={() => setMenuOpen(false)}
-            className="glass-btn-blue text-sm font-bold p-3 text-center flex items-center justify-center min-h-[44px] shadow-lg"
-          >
-            Daftar Sekarang
-          </Link>
+          <div className="text-xs font-bold text-red-700 bg-red-100/90 border border-red-200/80 p-2.5 text-center rounded-2xl">
+            Pendaftaran Ditutup
+          </div>
         </div>
       )}
     </header>

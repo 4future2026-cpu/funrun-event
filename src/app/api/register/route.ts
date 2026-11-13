@@ -4,50 +4,11 @@ import { sendPaymentInstructionsEmail } from "@/lib/email";
 import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
-  let body: any;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json(
-      { message: "Format payload JSON tidak valid." },
-      { status: 400 }
-    );
-  }
-
-  try {
-    const { full_name, email, phone, school_origin } = body || {};
-
-    if (!full_name || !email || !phone || !school_origin) {
-      return NextResponse.json(
-        { message: "Semua kolom formulir wajib diisi, termasuk asal sekolah." },
-        { status: 400 }
-      );
-    }
-
-    const trimmedName = full_name.trim();
-    if (trimmedName.length < 3) {
-      return NextResponse.json(
-        { message: "Nama lengkap harus diisi dengan benar (minimal 3 karakter)." },
-        { status: 400 }
-      );
-    }
-
-    // Validasi email: wajib domain @gmail.com
-    const normalizedEmail = email.trim().toLowerCase();
-    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    if (!gmailRegex.test(normalizedEmail)) {
-      return NextResponse.json(
-        { message: "Wajib menggunakan alamat email resmi @gmail.com yang aktif (contoh: nama@gmail.com)." },
-        { status: 400 }
-      );
-    }
-
-    // Validasi nomor WhatsApp: nomor ponsel Indonesia aktif (08xx / 628xx, 10-13 digit)
-    const cleanPhone = phone.trim().replace(/[\s-]/g, "");
-    const indonesianPhoneRegex = /^(\+62|62|0)8[1-9][0-9]{7,10}$/;
-    if (!indonesianPhoneRegex.test(cleanPhone)) {
-      return NextResponse.json(
-        { message: "Nomor WhatsApp harus nomor ponsel aktif Indonesia yang valid (diawali 08 atau 628, 10–13 digit)." },
+  return NextResponse.json(
+    { message: "Mohon maaf, pendaftaran resmi SRC X HK X SAKRARUN 2026 telah ditutup karena kuota peserta telah terpenuhi." },
+    { status: 403 }
+  );
+}
         { status: 400 }
       );
     }

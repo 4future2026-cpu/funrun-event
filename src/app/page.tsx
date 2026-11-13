@@ -29,28 +29,22 @@ export default function Home() {
               Raih ritme larimu, nikmati kesegaran waterstation, dan amankan slot resmi Anda hari ini.
             </p>
 
-            {/* Liquid Glass CTA Card: Siap Berlari */}
+            {/* Liquid Glass CTA Card: Pendaftaran Ditutup */}
             <div className="mt-8 max-w-md mx-auto">
               <div className="liquid-glass rounded-3xl p-6 md:p-8 text-center border border-white/85 shadow-2xl">
-                <span className="inline-block text-[11px] font-extrabold text-sky-700 uppercase tracking-widest bg-sky-100/80 px-3 py-1 rounded-full mb-2">
-                  Pendaftaran Dibuka
+                <span className="inline-block text-[11px] font-extrabold text-red-700 uppercase tracking-widest bg-red-100/90 px-3.5 py-1 rounded-full mb-2 border border-red-200">
+                  Pendaftaran Ditutup
                 </span>
                 <h2 className="text-xl md:text-2xl font-extrabold text-slate-900">
-                  Siap Berlari?
+                  Kuota Peserta Telah Terpenuhi
                 </h2>
-                <p className="mt-1.5 text-xs sm:text-sm text-slate-700 leading-relaxed">
-                  Biaya registrasi resmi hanya <strong>Rp 10.000</strong>. Kuota peserta terbatas untuk kenyamanan rute lari.
+                <p className="mt-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                  Terima kasih atas antusiasme yang luar biasa! Pendaftaran resmi <strong>SRC X HK X SAKRARUN 2026</strong> telah resmi ditutup karena batas kuota telah tercapai.
                 </p>
                 <div className="mt-5">
-                  <Link
-                    href="/daftar"
-                    className="glass-btn-blue text-sm sm:text-base font-bold py-3.5 px-6 w-full inline-flex items-center justify-center gap-2 shadow-xl min-h-[44px]"
-                  >
-                    <span>Daftar Sekarang</span>
-                    <svg className="w-4 h-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                    </svg>
-                  </Link>
+                  <div className="bg-slate-900/10 border border-slate-900/15 text-slate-800 text-xs sm:text-sm font-bold py-3.5 px-6 rounded-2xl">
+                    Sampai Jumpa di Race Day! 🏃‍♂️💨
+                  </div>
                 </div>
               </div>
             </div>
